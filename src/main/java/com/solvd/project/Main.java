@@ -6,12 +6,15 @@ import com.solvd.project.model.Watermelon;
 import com.solvd.project.utils.SpecialWordCounter;
 import com.solvd.project.interfaces.Product;
 import com.solvd.project.interfaces.Storable;
+import com.solvd.project.interfaces.StringTransformer;
 import com.solvd.project.model.QueueSize;
 import com.solvd.project.model.Apple;
 import com.solvd.project.model.Potato;
 import com.solvd.project.interfaces.Pricable;
 import com.solvd.project.exceptions.PriceException;
 import com.solvd.project.interfaces.Processable;
+import com.solvd.project.interfaces.MathOperation;
+import com.solvd.project.interfaces.MessagePrinter;
 import com.solvd.project.model.ProcessingLine;
 import com.solvd.project.model.Onion;
 import com.solvd.project.model.Peeler;
@@ -38,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class Main {
         public static void main(String[] args) throws WeightCheckException, QueueSize, PriceException {
@@ -45,6 +49,7 @@ public class Main {
                 LinkedList<Pricable> prices = new LinkedList<>();
                 Map<String, Harvestable> harvestMap = new HashMap<>();
                 Set<Storable> storageSet = new HashSet<>();
+                Stream<Storable> data = storageSet.stream();
                 final Logger logger = LogManager.getLogger(Main.class);
 
                 // ⬇️ Add products List
@@ -116,7 +121,9 @@ public class Main {
 
                 line.processAll(); // Execute all preparation steps in order
 
-                logger.info("=== Farm Total Prices ===");
+                // Lambda to print a message
+                MessagePrinter printer = msg -> logger.info(msg);
+                printer.print("=== Farm Total Prices ===");
                 // 📤 Get product at index 1 (Watermelon)
                 Pricable secondProduct = prices.get(1);
                 if (secondProduct instanceof Pricable pricable) {
@@ -134,7 +141,10 @@ public class Main {
                                 totalRevenue += pricable.getTotalPrice();
                         }
                 }
-                logger.info("Total revenue: " + totalRevenue);
+
+                // Lambda to transform a string (e.g., uppercase)
+                StringTransformer toUpper = str -> str.toUpperCase();
+                logger.info("Transformed: " + toUpper.transform("total revenue:") + totalRevenue);
 
                 // 🚜 Iterate and harvest each item
                 logger.info("=== Harvesting All Products ===");
@@ -144,8 +154,8 @@ public class Main {
                 }
 
                 // 🌀 Iterate with forEach and print storage advice
-                logger.info("📦 Storage Recommendations:");
-                storageSet.forEach(
+                logger.info("Storage Recommendations:");
+                data.forEach(
                                 product -> logger.info(product.getClass().getSimpleName() + ": "
                                                 + product.getStorageAdvice()));
 
@@ -156,7 +166,9 @@ public class Main {
                 Map<RipenessLevel, Integer> ripenessStats = new EnumMap<>(RipenessLevel.class);
                 Map<StorageType, Integer> storageStats = new EnumMap<>(StorageType.class);
                 Map<ProcessingStage, Integer> stageStats = new EnumMap<>(ProcessingStage.class);
+
                 double totalWeight = 0.0;
+
                 for (Product p : farmProducts) {
                         logger.info(p.getName() + " - " + p.getWeight() + "kg - "
                                         + (p.isRipe() ? ripeCount++ : unripeCount++));
@@ -169,6 +181,7 @@ public class Main {
                                 storageStats.merge(banana.getStorageType(), 1, Integer::sum);
                                 stageStats.merge(banana.getStage(), 1, Integer::sum);
                         }
+
                 }
 
                 logger.info("\n=== Ripeness Summary ===");
@@ -176,13 +189,19 @@ public class Main {
                 logger.info(String.format("Total weight: %.2f kg", totalWeight));
 
                 logger.info("\n📊 Ripeness Breakdown:");
-                ripenessStats.forEach((level, count) -> logger.info(level + ": " + count));
+                ripenessStats.entrySet().stream()
+                                .forEach(entry -> logger.info(entry.getKey() + ": " + entry.getValue()));
 
                 logger.info("\n📦 Storage Type Breakdown:");
-                storageStats.forEach((type, count) -> logger.info(type + ": " + count));
+                storageStats.entrySet().stream()
+                                .forEach(entry -> logger.info(entry.getKey() + ": " + entry.getValue()));
 
                 logger.info("\n🔧 Processing Stage Breakdown:");
-                stageStats.forEach((stage, count) -> logger.info(stage + ": " + count));
+                stageStats.entrySet().stream()
+                                .forEach(entry -> logger.info(entry.getKey() + ": " + entry.getValue()));
+
+                MathOperation result = (a, b) -> (a * b);
+                logger.info("Multiplied amount of riped and unriped: " + result.multiply(ripeCount, ripeCount));
 
                 if (totalWeight < 5) {
                         throw new WeightCheckException("Weight can't be less than 5", new RuntimeException());
