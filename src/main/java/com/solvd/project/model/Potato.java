@@ -12,42 +12,14 @@ import com.solvd.project.enums.RipenessLevel;
 import com.solvd.project.enums.StorageType;
 import com.solvd.project.interfaces.Product;
 
-public class Potato implements Product {
-    private double weight;
-    private boolean ripe;
-    public LocalDate harvestDate;
-    public int daysToSpoil;
-    private RipenessLevel ripenessLevel;
-    private StorageType storageType;
-    private ProcessingStage stage;
-    private static final Logger logger = LogManager.getLogger(Potato.class);
+public record Potato(double weight, boolean ripe, LocalDate harvestDate, int daysToSpoil, RipenessLevel ripenessLevel,
+        StorageType storageType, ProcessingStage stage) implements Product {
 
-    public Potato(double weight, boolean ripe, LocalDate harvestDate, int daysToSpoil, RipenessLevel ripenessLevel,
-            StorageType storageType, ProcessingStage stage) {
-        this.weight = weight;
-        this.ripe = ripe;
-        this.harvestDate = harvestDate;
-        this.daysToSpoil = daysToSpoil;
-        this.ripenessLevel = ripenessLevel;
-        this.storageType = storageType;
-        this.stage = stage;
-    }
+    private static final Logger logger = LogManager.getLogger(Potato.class);
 
     @Override
     public String getName() {
         return "Potato";
-    }
-
-    public RipenessLevel getRipenessLevel() {
-        return ripenessLevel;
-    }
-
-    public StorageType getStorageType() {
-        return storageType;
-    }
-
-    public ProcessingStage getStage() {
-        return stage;
     }
 
     @Override

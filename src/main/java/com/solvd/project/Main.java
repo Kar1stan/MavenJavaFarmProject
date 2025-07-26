@@ -27,11 +27,14 @@ import com.solvd.project.model.Banana;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.solvd.project.Main;
+import com.solvd.project.annotations.RunImmediately;
 import com.solvd.project.enums.ProcessingStage;
 import com.solvd.project.enums.RipenessLevel;
 import com.solvd.project.enums.StorageType;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -44,7 +47,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public class Main {
-        public static void main(String[] args) throws WeightCheckException, QueueSize, PriceException {
+        public static void main(String[] args) throws WeightCheckException, QueueSize, PriceException,
+                        IllegalAccessException, InvocationTargetException {
                 List<Product> farmProducts = new ArrayList<>();
                 LinkedList<Pricable> prices = new LinkedList<>();
                 Map<String, Harvestable> harvestMap = new HashMap<>();
@@ -110,6 +114,14 @@ public class Main {
                 Apple apple = new Apple(0.3, true, LocalDate.now(), 11, true, RipenessLevel.RIPE,
                                 StorageType.REFRIGERATED,
                                 ProcessingStage.WASHED);
+                for (Method method : apple.getClass().getDeclaredMethods()) {
+                        if (method.isAnnotationPresent(RunImmediately.class)) {
+                                RunImmediately annotation = method.getAnnotation(RunImmediately.class);
+                                for (int i = 0; i < annotation.times(); i++) {
+                                        method.invoke(apple);
+                                }
+                        }
+                }
                 Processable washer = new Washer<>(apple);
                 Processable peeler = new Peeler<>(apple);
                 Processable chiller = new Chiller<>(apple);
@@ -177,9 +189,9 @@ public class Main {
 
                         // If product supports enum tracking
                         if (p instanceof Banana banana) {
-                                ripenessStats.merge(banana.getRipenessLevel(), 1, Integer::sum);
-                                storageStats.merge(banana.getStorageType(), 1, Integer::sum);
-                                stageStats.merge(banana.getStage(), 1, Integer::sum);
+                                ripenessStats.merge(banana.ripenessLevel(), 1, Integer::sum);
+                                storageStats.merge(banana.storageType(), 1, Integer::sum);
+                                stageStats.merge(banana.stage(), 1, Integer::sum);
                         }
 
                 }

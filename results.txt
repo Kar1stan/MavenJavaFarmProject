@@ -46,3 +46,15 @@ Special words (8+ letters): 48
 --- Special Word Count ---
 File: article.txt
 Special words (8+ letters): 48
+
+--- Special Word Count ---
+File: article.txt
+Special words (8+ letters): 48
+
+--- Special Word Count ---
+File: article.txt
+Special words (8+ letters): 48
+
+--- Special Word Count ---
+File: article.txt
+Special words (8+ letters): 48

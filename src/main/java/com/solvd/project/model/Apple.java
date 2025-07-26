@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.solvd.project.model.Apple;
+import com.solvd.project.annotations.RunImmediately;
 import com.solvd.project.enums.ProcessingStage;
 import com.solvd.project.enums.RipenessLevel;
 import com.solvd.project.enums.StorageType;
@@ -122,6 +123,7 @@ public class Apple extends Fruit implements Product, Harvestable, Storable, Pric
         return baseAdvice;
     }
 
+    @RunImmediately(times = 3)
     public void caramelize() {
         logger.info("Caramelize the apple");
     }
