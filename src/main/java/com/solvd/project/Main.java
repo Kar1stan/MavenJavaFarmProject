@@ -1,6 +1,7 @@
 package com.solvd.project;
 
 import com.solvd.project.model.Strawberry;
+import com.solvd.project.model.Singleton;
 import com.solvd.project.model.Washer;
 import com.solvd.project.model.Watermelon;
 import com.solvd.project.utils.SpecialWordCounter;
@@ -46,7 +47,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class Main {
+public class Main implements Runnable {
+
+        private final String threadName;
+
+        public Main(String threadName) {
+                this.threadName = threadName;
+        }
+
         public static void main(String[] args) throws WeightCheckException, QueueSize, PriceException,
                         IllegalAccessException, InvocationTargetException {
                 List<Product> farmProducts = new ArrayList<>();
@@ -55,6 +63,14 @@ public class Main {
                 Set<Storable> storageSet = new HashSet<>();
                 Stream<Storable> data = storageSet.stream();
                 final Logger logger = LogManager.getLogger(Main.class);
+
+                Thread t1 = new Thread(new Main("Worker-1"));
+                Thread t2 = new Thread(new Main("Worker-2"));
+                Thread t3 = new Thread(new Main("Worker-3"));
+
+                t1.start();
+                t2.start();
+                t3.start();
 
                 // ⬇️ Add products List
                 farmProducts.add(new Watermelon(4.5, true, LocalDate.of(2025, 6, 25), 10, false, RipenessLevel.RIPE,
@@ -220,4 +236,11 @@ public class Main {
                 }
 
         }
+
+        @Override
+        public void run() {
+                Singleton singleton = Singleton.getInstance();
+                singleton.printMessage("Hello from thread: " + threadName);
+        }
+
 }
