@@ -1,9 +1,16 @@
 package com.solvd.project;
 
 import com.solvd.project.model.Strawberry;
+import com.solvd.project.model.Vehicles;
 import com.solvd.project.model.Singleton;
 import com.solvd.project.model.Washer;
 import com.solvd.project.model.Watermelon;
+import com.solvd.project.model.WeatherConditions;
+import com.solvd.project.service.DriverService;
+import com.solvd.project.service.PaymentsService;
+import com.solvd.project.service.PolicyHolderService;
+import com.solvd.project.service.PolicyService;
+import com.solvd.project.service.VehicleService;
 import com.solvd.project.utils.SpecialWordCounter;
 import com.solvd.project.interfaces.Product;
 import com.solvd.project.interfaces.Storable;
@@ -18,24 +25,42 @@ import com.solvd.project.interfaces.MathOperation;
 import com.solvd.project.interfaces.MessagePrinter;
 import com.solvd.project.model.ProcessingLine;
 import com.solvd.project.model.Onion;
+import com.solvd.project.model.Payments;
 import com.solvd.project.model.Peeler;
+import com.solvd.project.model.Policy;
+import com.solvd.project.model.PolicyHolders;
 import com.solvd.project.model.Cherry;
 import com.solvd.project.model.Chiller;
+import com.solvd.project.model.Claims;
+import com.solvd.project.model.Drivers;
+import com.solvd.project.model.Client;
 import com.solvd.project.interfaces.Harvestable;
 import com.solvd.project.exceptions.WeightCheckException;
 import com.solvd.project.model.Carrot;
 import com.solvd.project.model.Banana;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.solvd.project.Main;
 import com.solvd.project.annotations.RunImmediately;
+import com.solvd.project.dao.interfaces.GenericDAO;
 import com.solvd.project.enums.ProcessingStage;
 import com.solvd.project.enums.RipenessLevel;
 import com.solvd.project.enums.StorageType;
+import com.solvd.project.dao.PolicyHolderDAO;
+import com.solvd.project.dao.VehicleDAO;
+import com.solvd.project.dao.PolicyDAO;
+import com.solvd.project.dao.WeatherConditionsDAO;
+import com.solvd.project.dao.PaymentDAO;
+import com.solvd.project.dao.DriverDAO;
+import com.solvd.project.dao.ClaimDAO;
+import com.solvd.project.dao.ClientDAO;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -123,6 +148,47 @@ public class Main implements Runnable {
                 try {
                         SpecialWordCounter.analyzeFromResources("article.txt", "results.txt");
                 } catch (IOException e) {
+                        e.printStackTrace();
+                }
+
+                try {
+                        // 1. Connect to the database
+                        Connection conn = DriverManager.getConnection(
+                                        "jdbc:sqlserver://localhost:1433;databaseName=InsuranceCompany",
+                                        "Tabler12",
+                                        "1110");
+
+                        // 2. Initialize 8 DAOs
+                        GenericDAO<PolicyHolders, Integer> holderDAO = new PolicyHolderDAO(conn);
+                        GenericDAO<Policy, Integer> policyDAO = new PolicyDAO(conn);
+                        GenericDAO<Vehicles, Integer> vehicleDAO = new VehicleDAO(conn);
+                        GenericDAO<Drivers, Integer> driverDAO = new DriverDAO(conn);
+                        GenericDAO<Claims, Integer> claimDAO = new ClaimDAO(conn);
+                        GenericDAO<Payments, Integer> paymentsDAO = new PaymentDAO(conn);
+                        GenericDAO<Client, Integer> clientDAO = new ClientDAO(conn);
+                        GenericDAO<WeatherConditions, Integer> weatherDAO = new WeatherConditionsDAO(conn);
+
+                        // 3. Initialize 5 Services
+                        PolicyHolderService holderService = new PolicyHolderService(holderDAO);
+                        PolicyService policyService = new PolicyService(policyDAO);
+                        VehicleService vehicleService = new VehicleService(vehicleDAO);
+                        DriverService driverService = new DriverService(driverDAO);
+                        PaymentsService paymentsService = new PaymentsService(paymentsDAO);
+
+                        // 4. Use services
+                        System.out.println("📋 All Policy Holders:");
+                        List<PolicyHolders> holders = holderService.getAll();
+                        for (PolicyHolders h : holders) {
+                                System.out.println(" - " + h.getName() + " (" + h.getContact() + ")");
+                        }
+
+                        System.out.println("\n🚗 Adding new vehicle...");
+                        Vehicles newVehicle = new Vehicles(0, "Tesla", "2025", "TESLA123VIN");
+                        vehicleService.create(newVehicle);
+
+                        System.out.println("\n✅ Done!");
+
+                } catch (Exception e) {
                         e.printStackTrace();
                 }
 
