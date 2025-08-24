@@ -6,16 +6,19 @@ import com.solvd.project.model.Singleton;
 import com.solvd.project.model.Washer;
 import com.solvd.project.model.Watermelon;
 import com.solvd.project.model.WeatherConditions;
+import com.solvd.project.model.Witness;
 import com.solvd.project.service.DriverService;
 import com.solvd.project.service.PaymentsService;
 import com.solvd.project.service.PolicyHolderService;
 import com.solvd.project.service.PolicyService;
 import com.solvd.project.service.VehicleService;
+import com.solvd.project.service.XMLImportService;
 import com.solvd.project.utils.SpecialWordCounter;
 import com.solvd.project.interfaces.Product;
 import com.solvd.project.interfaces.Storable;
 import com.solvd.project.interfaces.StringTransformer;
 import com.solvd.project.model.QueueSize;
+import com.solvd.project.model.Adjuster;
 import com.solvd.project.model.Apple;
 import com.solvd.project.model.Potato;
 import com.solvd.project.interfaces.Pricable;
@@ -56,11 +59,14 @@ import com.solvd.project.dao.DriverDAO;
 import com.solvd.project.dao.ClaimDAO;
 import com.solvd.project.dao.ClientDAO;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -154,7 +160,7 @@ public class Main implements Runnable {
                 try {
                         // 1. Connect to the database
                         Connection conn = DriverManager.getConnection(
-                                        "jdbc:sqlserver://localhost:1433;databaseName=InsuranceCompany",
+                                        "jdbc:sqlserver://localhost:1433;databaseName=InsuranceCompany;encrypt=true;trustServerCertificate=true",
                                         "Tabler12",
                                         "1110");
 
@@ -168,14 +174,18 @@ public class Main implements Runnable {
                         GenericDAO<Client, Integer> clientDAO = new ClientDAO(conn);
                         GenericDAO<WeatherConditions, Integer> weatherDAO = new WeatherConditionsDAO(conn);
 
-                        // 3. Initialize 5 Services
+                        // 3. Initialize 5 Services + StAX Parser Service
                         PolicyHolderService holderService = new PolicyHolderService(holderDAO);
                         PolicyService policyService = new PolicyService(policyDAO);
                         VehicleService vehicleService = new VehicleService(vehicleDAO);
                         DriverService driverService = new DriverService(driverDAO);
                         PaymentsService paymentsService = new PaymentsService(paymentsDAO);
+                        XMLImportService xmlService = new XMLImportService();
 
-                        // 4. Use services
+                        // 4. Load and process XML data
+                        InputStream xmlStream = new FileInputStream("insurance_data.xml");
+
+                        // 5. Use services
                         System.out.println("📋 All Policy Holders:");
                         List<PolicyHolders> holders = holderService.getAll();
                         for (PolicyHolders h : holders) {
@@ -186,7 +196,22 @@ public class Main implements Runnable {
                         Vehicles newVehicle = new Vehicles(0, "Tesla", "2025", "TESLA123VIN");
                         vehicleService.create(newVehicle);
 
-                        System.out.println("\n✅ Done!");
+                        System.out.println("\n✅ Vehicles added!");
+
+                        System.out.println("📥 Importing Witnesses from XML...");
+                        List<Witness> witnesses = xmlService.loadWitnesses(xmlStream);
+                        for (Witness w : witnesses) {
+                                System.out.println(" - Witness #" + w.getId() + ": " + w.getStatementSummary());
+
+                        }
+
+                        xmlStream = new FileInputStream("insurance_data.xml"); // Reset stream
+                        System.out.println("\n📥 Importing Adjusters from XML...");
+                        List<Adjuster> adjusters = xmlService.loadAdjusters(xmlStream);
+                        for (Adjuster a : adjusters) {
+                                System.out.println(" - Adjuster: " + a.getName() + ", Case: " + a.getAssignedCase());
+
+                        }
 
                 } catch (Exception e) {
                         e.printStackTrace();

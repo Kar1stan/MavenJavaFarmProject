@@ -1,0 +1,29 @@
+<InsuranceCompany>
+    <Witnesses>
+        <Witness>
+            <idWitnesses>1</idWitnesses>
+            <Contact_Info>john.doe@example.com</Contact_Info>
+            <Statement_Summary>Observed vehicle collision</Statement_Summary>
+        </Witness>
+        <Witness>
+            <idWitnesses>2</idWitnesses>
+            <Contact_Info>jane.smith@example.com</Contact_Info>
+            <Statement_Summary>Heard loud crash near intersection</Statement_Summary>
+        </Witness>
+    </Witnesses>
+
+    <Adjusters>
+        <Adjuster>
+            <idAdjusters>1</idAdjusters>
+            <Name>Michael Johnson</Name>
+            <Contact>m.johnson@adjusters.com</Contact>
+            <Assigned_Case>CASE-2025-001</Assigned_Case>
+        </Adjuster>
+        <Adjuster>
+            <idAdjusters>2</idAdjusters>
+            <Name>Lisa Chen</Name>
+            <Contact>l.chen@adjusters.com</Contact>
+            <Assigned_Case>CASE-2025-002</Assigned_Case>
+        </Adjuster>
+    </Adjusters>
+</InsuranceCompany>
