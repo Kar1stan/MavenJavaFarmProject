@@ -1,24 +1,14 @@
 package com.solvd.project;
 
 import com.solvd.project.model.Strawberry;
-import com.solvd.project.model.Vehicles;
 import com.solvd.project.model.Singleton;
 import com.solvd.project.model.Washer;
 import com.solvd.project.model.Watermelon;
-import com.solvd.project.model.WeatherConditions;
-import com.solvd.project.model.Witness;
-import com.solvd.project.service.DriverService;
-import com.solvd.project.service.PaymentsService;
-import com.solvd.project.service.PolicyHolderService;
-import com.solvd.project.service.PolicyService;
-import com.solvd.project.service.VehicleService;
-import com.solvd.project.service.XMLImportService;
 import com.solvd.project.utils.SpecialWordCounter;
 import com.solvd.project.interfaces.Product;
 import com.solvd.project.interfaces.Storable;
 import com.solvd.project.interfaces.StringTransformer;
 import com.solvd.project.model.QueueSize;
-import com.solvd.project.model.Adjuster;
 import com.solvd.project.model.Apple;
 import com.solvd.project.model.Potato;
 import com.solvd.project.interfaces.Pricable;
@@ -28,15 +18,9 @@ import com.solvd.project.interfaces.MathOperation;
 import com.solvd.project.interfaces.MessagePrinter;
 import com.solvd.project.model.ProcessingLine;
 import com.solvd.project.model.Onion;
-import com.solvd.project.model.Payments;
 import com.solvd.project.model.Peeler;
-import com.solvd.project.model.Policy;
-import com.solvd.project.model.PolicyHolders;
 import com.solvd.project.model.Cherry;
 import com.solvd.project.model.Chiller;
-import com.solvd.project.model.Claims;
-import com.solvd.project.model.Drivers;
-import com.solvd.project.model.Client;
 import com.solvd.project.interfaces.Harvestable;
 import com.solvd.project.exceptions.WeightCheckException;
 import com.solvd.project.model.Carrot;
@@ -46,19 +30,9 @@ import org.apache.logging.log4j.Logger;
 
 import com.solvd.project.Main;
 import com.solvd.project.annotations.RunImmediately;
-import com.solvd.project.dao.interfaces.GenericDAO;
 import com.solvd.project.enums.ProcessingStage;
 import com.solvd.project.enums.RipenessLevel;
 import com.solvd.project.enums.StorageType;
-import com.solvd.project.dao.PolicyHolderDAO;
-import com.solvd.project.dao.VehicleDAO;
-import com.solvd.project.dao.PolicyDAO;
-import com.solvd.project.dao.WeatherConditionsDAO;
-import com.solvd.project.dao.PaymentDAO;
-import com.solvd.project.dao.DriverDAO;
-import com.solvd.project.dao.ClaimDAO;
-import com.solvd.project.dao.ClientDAO;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -154,66 +128,6 @@ public class Main implements Runnable {
                 try {
                         SpecialWordCounter.analyzeFromResources("article.txt", "results.txt");
                 } catch (IOException e) {
-                        e.printStackTrace();
-                }
-
-                try {
-                        // 1. Connect to the database
-                        Connection conn = DriverManager.getConnection(
-                                        "jdbc:sqlserver://localhost:1433;databaseName=InsuranceCompany;encrypt=true;trustServerCertificate=true",
-                                        "Tabler12",
-                                        "1110");
-
-                        // 2. Initialize 8 DAOs
-                        GenericDAO<PolicyHolders, Integer> holderDAO = new PolicyHolderDAO(conn);
-                        GenericDAO<Policy, Integer> policyDAO = new PolicyDAO(conn);
-                        GenericDAO<Vehicles, Integer> vehicleDAO = new VehicleDAO(conn);
-                        GenericDAO<Drivers, Integer> driverDAO = new DriverDAO(conn);
-                        GenericDAO<Claims, Integer> claimDAO = new ClaimDAO(conn);
-                        GenericDAO<Payments, Integer> paymentsDAO = new PaymentDAO(conn);
-                        GenericDAO<Client, Integer> clientDAO = new ClientDAO(conn);
-                        GenericDAO<WeatherConditions, Integer> weatherDAO = new WeatherConditionsDAO(conn);
-
-                        // 3. Initialize 5 Services + StAX Parser Service
-                        PolicyHolderService holderService = new PolicyHolderService(holderDAO);
-                        PolicyService policyService = new PolicyService(policyDAO);
-                        VehicleService vehicleService = new VehicleService(vehicleDAO);
-                        DriverService driverService = new DriverService(driverDAO);
-                        PaymentsService paymentsService = new PaymentsService(paymentsDAO);
-                        XMLImportService xmlService = new XMLImportService();
-
-                        // 4. Load and process XML data
-                        InputStream xmlStream = new FileInputStream("insurance_data.xml");
-
-                        // 5. Use services
-                        System.out.println("📋 All Policy Holders:");
-                        List<PolicyHolders> holders = holderService.getAll();
-                        for (PolicyHolders h : holders) {
-                                System.out.println(" - " + h.getName() + " (" + h.getContact() + ")");
-                        }
-
-                        System.out.println("\n🚗 Adding new vehicle...");
-                        Vehicles newVehicle = new Vehicles(0, "Tesla", "2025", "TESLA123VIN");
-                        vehicleService.create(newVehicle);
-
-                        System.out.println("\n✅ Vehicles added!");
-
-                        System.out.println("📥 Importing Witnesses from XML...");
-                        List<Witness> witnesses = xmlService.loadWitnesses(xmlStream);
-                        for (Witness w : witnesses) {
-                                System.out.println(" - Witness #" + w.getId() + ": " + w.getStatementSummary());
-
-                        }
-
-                        xmlStream = new FileInputStream("insurance_data.xml"); // Reset stream
-                        System.out.println("\n📥 Importing Adjusters from XML...");
-                        List<Adjuster> adjusters = xmlService.loadAdjusters(xmlStream);
-                        for (Adjuster a : adjusters) {
-                                System.out.println(" - Adjuster: " + a.getName() + ", Case: " + a.getAssignedCase());
-
-                        }
-
-                } catch (Exception e) {
                         e.printStackTrace();
                 }
 
